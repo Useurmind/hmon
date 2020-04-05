@@ -11,7 +11,7 @@
         {
             "label": "go run",
             "type": "shell",
-            "command": "go run ./app"
+            "command": "$env:HMON_DBFILEPATH='hmon.data'; $env:HMON_ADDRESS='127.0.0.1'; go run ./app"
         }
     ]
 }
