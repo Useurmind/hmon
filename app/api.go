@@ -29,27 +29,15 @@ func NewAPIHandler(options *APIOptions) (http.Handler, error) {
 func (a API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("API Request %s: %s", r.Method, r.URL.String())
 
-	isJobApi := len(strings.TrimPrefix(r.URL.Path, "/jobsource")) != len(r.URL.Path)
-	if isJobApi {
-		jobHandler := http.StripPrefix("/jobsource", jobSourceAPI{
-			LogConfigurationService: a.options.LogConfigurationService,
-		})
-
-		jobHandler.ServeHTTP(w, r)
-		return
+	mux := NewHTTPMux()
+	mux.PathHandlers["/jobsource"] = jobSourceAPI{
+		LogConfigurationService: a.options.LogConfigurationService,
+	}
+	mux.PathHandlers["/sources"] = sourcesAPI{
+		LogConfigurationService: a.options.LogConfigurationService,
 	}
 
-	isSourceApi := len(strings.TrimPrefix(r.URL.Path, "/sources")) != len(r.URL.Path)
-	if isSourceApi {
-		sourcesHandler := http.StripPrefix("/sources", sourcesAPI{
-			LogConfigurationService: a.options.LogConfigurationService,
-		})
-
-		sourcesHandler.ServeHTTP(w, r)
-		return
-	}
-
-	w.WriteHeader(http.StatusNotFound)
+	mux.ServeHTTP(w, r)
 }
 
 type sourcesAPI struct {

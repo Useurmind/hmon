@@ -4,6 +4,8 @@ import (
 	"log"
 	"fmt"
 	"net/http"
+
+	"github.com/Useurmind/spas/handler"
 )
 
 type Server struct {
@@ -31,6 +33,16 @@ func (s *Server) Run() error {
 		return err
 	}
 
+	spasOptions := handler.Options{
+		ServeFolder: "www",
+		HTMLIndexFile: "index.html",
+	}
+	spasHandler := handler.NewSPASHandler(&spasOptions)
+
+	mux := NewHTTPMux()
+	mux.PathHandlers["/api"] = apiHandler
+	mux.PathHandlers["/ui"] = spasHandler
+
 	err = logConfigService.PingDB()
 	if err != nil {
 		return err
@@ -38,7 +50,7 @@ func (s *Server) Run() error {
 
 	listenOn := fmt.Sprintf("%s:%s", s.Address, s.Port)
 	log.Printf("Listening on: %s\r\n", listenOn)
-	err = http.ListenAndServe(listenOn, apiHandler)
+	err = http.ListenAndServe(listenOn, mux)
 	if err != nil {
 		return err
 	}
