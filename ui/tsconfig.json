@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "outDir": "out",
+        "module": "esnext",
+        "moduleResolution": "node",
+        "watch": false, 
+        "sourceMap": true,
+        "target": "es2017",
+        "importHelpers": true,
+        "jsx": "react",
+        "declaration": false,  // no declaration files required because its an app
+        "skipLibCheck": true
+    },
+    "exclude": [
+        "out",
+        "node_modules"
+    ]
+}

@@ -42,6 +42,7 @@ func (s *Server) Run() error {
 	mux := NewHTTPMux()
 	mux.PathHandlers["/api"] = apiHandler
 	mux.PathHandlers["/ui"] = spasHandler
+	mux.PathHandlers["/"] = http.RedirectHandler("/ui", 301)
 
 	err = logConfigService.PingDB()
 	if err != nil {

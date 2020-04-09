@@ -12,6 +12,54 @@
             "label": "go run",
             "type": "shell",
             "command": "$env:HMON_DBFILEPATH='hmon.data'; $env:HMON_ADDRESS='127.0.0.1'; go run ./app"
+        },
+        {
+            "type": "npm",
+            "script": "build",
+            "isBackground": false,
+            "path": "/ui",
+            // problem matchers from extension https://marketplace.visualstudio.com/items?itemName=eamodio.tsl-problem-matcher
+            "problemMatcher": ["$ts-webpack", "$tslint-webpack", "$ts-checker-webpack"]
+        },
+        {
+            "type": "npm",
+            "script": "build_production",
+            "isBackground": false,
+            "path": "/ui",
+            // problem matchers from extension https://marketplace.visualstudio.com/items?itemName=eamodio.tsl-problem-matcher
+            "problemMatcher": ["$ts-webpack", "$tslint-webpack", "$ts-checker-webpack"]
+        },
+        {
+            "type": "npm",
+            "script": "start",
+            "isBackground": true,
+            "path": "/ui",
+            // problem matchers from extension https://marketplace.visualstudio.com/items?itemName=eamodio.tsl-problem-matcher
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch", "$ts-checker-webpack-watch"]
+        },
+        {
+            "type": "npm",
+            "script": "start_production",
+            "isBackground": true,
+            "path": "/ui",
+            // problem matchers from extension https://marketplace.visualstudio.com/items?itemName=eamodio.tsl-problem-matcher
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch", "$ts-checker-webpack-watch"]
+        },
+        {
+            "type": "npm",
+            "script": "testonce",
+            "isBackground": false,
+            "path": "/ui",
+            // problem matchers from extension https://marketplace.visualstudio.com/items?itemName=eamodio.tsl-problem-matcher
+            "problemMatcher": ["$ts-webpack", "$tslint-webpack", "$ts-checker-webpack"]
+        },
+        {
+            "type": "npm",
+            "script": "test",
+            "isBackground": true,
+            "path": "/ui",
+            // problem matchers from extension https://marketplace.visualstudio.com/items?itemName=eamodio.tsl-problem-matcher
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch", "$ts-checker-webpack-watch"]
         }
     ]
 }
