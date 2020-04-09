@@ -21,7 +21,7 @@ type Server struct {
 
 func (s *Server) Run() error {
 	logConfigService := LogConfigurationService{
-		DBFilePath: s.DBFilePath,
+		NewDBService(s.DBFilePath),
 	}
 	defer logConfigService.Close()
 

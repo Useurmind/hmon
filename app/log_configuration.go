@@ -4,23 +4,22 @@ import (
 	"log"
 	"github.com/boltdb/bolt"
 	"encoding/json"
-	"encoding/binary"
 )
-
-type WithId interface {
-	GetId() int
-}
 
 // LogSource describes the source of log files.
 type LogSource struct {
 	Id int
 	Name string
 	Type string
+	SourceFolder string
+	FileRegex string
 }
 
 func (ls *LogSource) GetId() int {
 	return ls.Id
 }
+
+const JobLogSourceType string = "job"
 
 // JobLogSource is a source of log files that contain the results of a single job.
 type JobLogSource struct {
@@ -54,27 +53,29 @@ func (ls *JobLogSource) ToLogSource() *LogSource {
 		Id: ls.Id,
 		Name: ls.Name,
 		Type: ls.Type,
+		SourceFolder: ls.SourceFolder,
+		FileRegex: ls.FileRegex,
 	}
 }
 
 func (ls *JobLogSource) ApplyType() {
-	ls.Type = "job"
+	ls.Type = JobLogSourceType
 }
 
 type LogConfigurationService struct {
-	DBFilePath string
-	DB *bolt.DB
+	DBService
 }
 
 func (s *LogConfigurationService) GetLogSources() ([]*LogSource, error) {
-	err := s.ensureDB()
+	log.Println("Call to GetLogSources()")
+	db, err := s.getDB()
 	if err != nil {
 		return nil, err
 	}
 
 	var lss []*LogSource = make([]*LogSource, 0)
 
-	err = s.DB.View(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		bLS := tx.Bucket([]byte(logSourcesBucket))
 		if bLS == nil {
 			return nil
@@ -98,14 +99,15 @@ func (s *LogConfigurationService) GetLogSources() ([]*LogSource, error) {
 }
 
 func (s *LogConfigurationService) GetJobLogSource(id int) (*JobLogSource, error) {
-	err := s.ensureDB()
+	log.Printf("Call to GetJobLogSource(%d)", id)
+	db, err := s.getDB()
 	if err != nil {
 		return nil, err
 	}
 
 	var jls *JobLogSource = nil
 
-	err = s.DB.View(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		bJLS := tx.Bucket([]byte(jobLogSourcesBucket))
 		if bJLS == nil {
 			return nil
@@ -126,15 +128,16 @@ func (s *LogConfigurationService) GetJobLogSource(id int) (*JobLogSource, error)
 	return jls, err
 }
 
-func (s *LogConfigurationService) CreateOrUpdateJobLogSource(jls *JobLogSource) error {
+func (s *LogConfigurationService) CreateOrUpdateJobLogSource(jls *JobLogSource) (*JobLogSource, error) {
+	log.Printf("Call to CreateOrUpdateJobLogSource(%+v)", jls)
 	jls.ApplyType()
 
-	err := s.ensureDB()
+	db, err := s.getDB()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return s.DB.Update(func (tx *bolt.Tx) error {
+	return jls, db.Update(func (tx *bolt.Tx) error {
 		bLS, err := ensureLogSourceBucket(tx)
 		if err != nil {
 			return err
@@ -167,12 +170,13 @@ func (s *LogConfigurationService) CreateOrUpdateJobLogSource(jls *JobLogSource) 
 }
 
 func (s *LogConfigurationService) DeleteJobLogSource(id int) error {
-	err := s.ensureDB()
+	log.Printf("Call to DeleteJobLogSource(%d)", id)
+	db, err := s.getDB()
 	if err != nil {
 		return err
 	}
 
-	return s.DB.Update(func (tx *bolt.Tx) error {
+	return db.Update(func (tx *bolt.Tx) error {
 		bLS, err := ensureLogSourceBucket(tx)
 		if err != nil {
 			return err
@@ -196,49 +200,6 @@ func (s *LogConfigurationService) DeleteJobLogSource(id int) error {
 	})
 }
 
-func (s *LogConfigurationService) PingDB() error {
-	err := s.ensureDB()
-
-	return err
-}
-
-func (s *LogConfigurationService) ensureDB() error {
-	if s.DB != nil {
-		return nil
-	}
-
-	log.Printf("Using database in %s", s.DBFilePath)
-
-	db, err := bolt.Open(s.DBFilePath, 0600, nil)
-	if err != nil {
-		return err
-	}
-
-	s.DB = db
-
-	return nil
-}
-
-func (s *LogConfigurationService) Close() {
-	if s.DB != nil {
-		s.DB.Close()
-	}
-}
-
-func saveObject(b *bolt.Bucket, obj WithId) error {
-	json, err := json.Marshal(obj)
-	if err != nil {
-		return err
-	}
-
-	err = b.Put(itob(obj.GetId()), json)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 const logSourcesBucket = "log_sources"
 const jobLogSourcesBucket = "log_sources_jobs"
 
@@ -248,10 +209,4 @@ func ensureLogSourceBucket(tx *bolt.Tx) (*bolt.Bucket, error) {
 
 func ensureJobLogSourceBucket(tx *bolt.Tx) (*bolt.Bucket, error) {
 	return tx.CreateBucketIfNotExists([]byte(jobLogSourcesBucket))
-}
-
-func itob(v int) []byte {
-    b := make([]byte, 8)
-    binary.BigEndian.PutUint64(b, uint64(v))
-    return b
 }

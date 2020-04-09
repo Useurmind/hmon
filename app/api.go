@@ -109,13 +109,13 @@ func (a jobSourceAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = a.LogConfigurationService.CreateOrUpdateJobLogSource(&jls)
+		savedJls, err := a.LogConfigurationService.CreateOrUpdateJobLogSource(&jls)
 		if err != nil {
 			handleError(w, "Unkown error", http.StatusInternalServerError, err)
 			return
 		}
 
-		result, err := json.Marshal(jls)
+		result, err := json.Marshal(savedJls)
 		if err != nil {
 			handleError(w, "Unkown error", http.StatusInternalServerError, err)
 			return
