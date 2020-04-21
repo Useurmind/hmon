@@ -20,13 +20,15 @@ type Server struct {
 }
 
 func (s *Server) Run() error {
-	logConfigService := LogConfigurationService{
-		NewDBService(s.DBFilePath),
+	logConfigService, err := NewLogConfigurationService(NewDBService(s.DBFilePath))
+	if err != nil {
+		return err
 	}
+
 	defer logConfigService.Close()
 
 	apiOptions := APIOptions{
-		LogConfigurationService: &logConfigService,
+		LogConfigurationService: logConfigService,
 	}
 	apiHandler, err := NewAPIHandler(&apiOptions)
 	if err != nil {

@@ -63,7 +63,46 @@ func (ls *JobLogSource) ApplyType() {
 }
 
 type LogConfigurationService struct {
-	DBService
+	*DBService
+}
+
+func NewLogConfigurationService(dbService *DBService) (*LogConfigurationService, error) {
+	logConfigurationService := LogConfigurationService{
+		DBService: dbService,
+	}
+
+	err := logConfigurationService.Init()
+	if err != nil {
+		return nil, err
+	}
+
+	return &logConfigurationService, nil
+}
+
+func (s *LogConfigurationService) Init() error {
+	log.Println("Call to Init()")
+	db, err := s.getDB()
+	if err != nil {
+		return err
+	}
+
+	err = s.PingDB()
+	if err != nil {
+		return err
+	}
+
+	return db.Update(func (tx *bolt.Tx) error {
+		_, err := ensureLogSourceBucket(tx)
+		if err != nil {
+			return err
+		}
+		_, err = ensureJobLogSourceBucket(tx)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (s *LogConfigurationService) GetLogSources() ([]*LogSource, error) {
@@ -76,6 +115,7 @@ func (s *LogConfigurationService) GetLogSources() ([]*LogSource, error) {
 	var lss []*LogSource = make([]*LogSource, 0)
 
 	err = db.View(func(tx *bolt.Tx) error {
+		log.Println("Getting bucket")
 		bLS := tx.Bucket([]byte(logSourcesBucket))
 		if bLS == nil {
 			return nil
@@ -87,6 +127,7 @@ func (s *LogConfigurationService) GetLogSources() ([]*LogSource, error) {
 			if err != nil {
 				return err
 			}
+			
 			lss = append(lss, ls)
 
 			return nil

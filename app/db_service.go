@@ -11,14 +11,14 @@ type DBService struct {
 	db *bolt.DB
 }
 
-func NewDBService(dbFilePath string) DBService {
-	return DBService{
+func NewDBService(dbFilePath string) *DBService {
+	return &DBService{
 		dbFilePath: dbFilePath,
 		db: nil,
 	}
 }
 
-func (s DBService) getDB() (*bolt.DB, error) {
+func (s *DBService) getDB() (*bolt.DB, error) {
 	err := s.ensureDB()
 	if err != nil {
 		return nil, err
@@ -27,13 +27,13 @@ func (s DBService) getDB() (*bolt.DB, error) {
 	return s.db, err
 }
 
-func (s DBService) PingDB() error {
+func (s *DBService) PingDB() error {
 	err := s.ensureDB()
 
 	return err
 }
 
-func (s DBService) ensureDB() error {
+func (s *DBService) ensureDB() error {
 	if s.db != nil {
 		return nil
 	}
@@ -50,7 +50,7 @@ func (s DBService) ensureDB() error {
 	return nil
 }
 
-func (s DBService) Close() {
+func (s *DBService) Close() {
 	if s.db != nil {
 		s.db.Close()
 		s.db = nil
