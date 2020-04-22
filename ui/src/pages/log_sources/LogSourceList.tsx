@@ -39,7 +39,7 @@ const LogSourceListImpl: React.FunctionComponent<ILogSourceListProps> = props =>
                 <ListItemText primary={ls.name + " " + ls.type}
                               secondary={ls.sourceFolder + " -> " + ls.fileRegex}></ListItemText>
             </ListItem>;
-        }) }        
+        }) }
     </List>;
 };
 

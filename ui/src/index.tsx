@@ -16,7 +16,7 @@ const globalStores = RfluxxRouting.init({
     siteMap,
     containerFactory: globalContainerFactory,
     targetNumberOpenPages: 5,
-    rootPath: "/ui/"
+    rootPath: "ui"
 });
 
 

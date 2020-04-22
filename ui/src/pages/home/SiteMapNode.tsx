@@ -3,7 +3,9 @@ import { ISiteMapNode } from "rfluxx-routing";
 
 import { ContainerFactory } from "./ContainerFactory";
 import { HomePage } from "./HomePage";
+
 import { siteMapNode as logSourcePageNode } from "../log_sources/SiteMapNode";
+import { siteMapNode as jobLogSourcePageNode } from "../job_log_source/SiteMapNode";
 
 
 /**
@@ -15,6 +17,7 @@ export const siteMapNode: ISiteMapNode = {
     containerFactory: new ContainerFactory(),
     render: p => <HomePage />,
     children: [
-        logSourcePageNode
+        logSourcePageNode,
+        jobLogSourcePageNode
     ]
 };

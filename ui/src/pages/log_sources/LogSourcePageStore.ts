@@ -1,5 +1,6 @@
 import { handleAction, handleActionVoid, IInjectedStoreOptions, IStore, reduceAction, useStore } from "rfluxx";
-import { clearMultiSlashes } from 'rfluxx-routing';
+import { clearMultiSlashes, RouteParameters } from 'rfluxx-routing';
+import { Observable } from 'rxjs';
 
 export interface ILogSource {
     id: number;
@@ -8,7 +9,6 @@ export interface ILogSource {
 	sourceFolder: string;
 	fileRegex: string;
 }
-
 /**
  * The state of the store { @see LogSourcePageStore }.
  */
@@ -37,6 +37,12 @@ export interface ILogSourcePageStore extends IStore<ILogSourcePageStoreState>
      * Load the log sources from the backend.
      */
     loadLogSources();
+
+    /**
+     * Create a new log source for jobs.
+     * @param IJobLogSource The log source to create.
+     */
+    createJobLogSource(IJobLogSource);
 }
 
 /**
@@ -63,7 +69,7 @@ export const LogSourcePageStore = (options: ILogSourcePageStoreOptions) => {
     };
     const [state, setState, store] = useStore<ILogSourcePageStoreState>(initialState);
 
-    var me = {
+    const me = {
         ...store,
         loadLogSources: () => {
             fetch("/api/sources")
