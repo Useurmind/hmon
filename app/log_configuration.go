@@ -8,11 +8,11 @@ import (
 
 // LogSource describes the source of log files.
 type LogSource struct {
-	Id int
-	Name string
-	Type string
-	SourceFolder string
-	FileRegex string
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+	SourceFolder string `json:"sourceFolder"`
+	FileRegex string `json:"fileRegex"`
 }
 
 func (ls *LogSource) GetId() int {
@@ -23,25 +23,25 @@ const JobLogSourceType string = "job"
 
 // JobLogSource is a source of log files that contain the results of a single job.
 type JobLogSource struct {
-	Id int
-	Name string
-	Type string
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Type string `json:"type"`
 
 	// The source folder is the absolute path to scan for matching log files.
-	SourceFolder string
+	SourceFolder string `json:"sourceFolder"`
 
 	// A regex to match all files in the folder that should be scanned
 	// To retrieve a time from the file name integrate a group named 'time' into the regex.
 	// If no time group is found or matched the file time will be used.
-	FileRegex string
+	FileRegex string `json:"fileRegex"`
 
 	// A regex that applied to a line in the file states that the job was successful.
 	// Parsing will start from the end.
-	SuccessRegex string
+	SuccessRegex string `json:"successRegex"`
 
 	// A regex that applied to a line in the file indicates an error.
 	// Parsing will start from the end.
-	ErrorRegex string
+	ErrorRegex string `json:"errorRegex"`
 }
 
 func (ls *JobLogSource) GetId() int {

@@ -6,18 +6,25 @@ import (
 	"strings"
 )
 
-type HTTPMux struct {
-	PathHandlers map[string]http.Handler
+type HTTPMuxHandler struct {
+	Path string
+	HTTPHandler http.Handler
 }
 
-func NewHTTPMux() HTTPMux {
+type HTTPMux struct {
+	PathHandlers []HTTPMuxHandler
+}
+
+func NewHTTPMux(handlers []HTTPMuxHandler) HTTPMux {
 	return HTTPMux{
-		PathHandlers: make(map[string]http.Handler),
+		PathHandlers: handlers,
 	}
 }
 
 func (m HTTPMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	for path, handler := range m.PathHandlers {
+	for _, muxHandler := range m.PathHandlers {
+		path := muxHandler.Path
+		handler := muxHandler.HTTPHandler
 		isMatchPath := len(strings.TrimPrefix(req.URL.Path, path)) != len(req.URL.Path)
 		if isMatchPath {
 			jobHandler := http.StripPrefix(path, handler)

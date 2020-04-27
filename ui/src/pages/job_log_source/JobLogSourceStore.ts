@@ -52,6 +52,17 @@ export interface IJobLogSourceStore extends IStore<IJobLogSourceStoreState>
      * Save the current job log source.
      */
     save();
+
+    /**
+     * Set the name of the jls
+     * @param name The name.
+     */
+    setName(name: string);
+
+    setSourceFolder(sourceFolder: string);
+    setFileRegex(fileRegex: string);
+    setSuccessRegex(value: string);
+    setErrorRegex(value: string);
 }
 
 /**
@@ -61,31 +72,39 @@ export const JobLogSourceStore = (options: IJobLogSourceStoreOptions) => {
     const initialState = {
         jobLogSourceId: null,
         jobLogSource: {
-            id: null
+            id: null,
+            type: "job"
         }
     } as IJobLogSourceStoreState;
     const [state, setState, store] = useStore<IJobLogSourceStoreState>(initialState);
 
-    options.routeParameters.subscribe(p => {
-        const jlsId = p.getAsInt("id");
+    options.routeParameters.subscribe(p =>
+    {
+        const isCreate = p.get("id") === "new";
+        const jlsId = isCreate ? -1 : p.getAsInt("id");
 
-        fetch(`/api/jobsource/${jlsId}`)
-            .then(r => r.json())
-            .then(json => {
-                const jobLogSource = json as IJobLogSource;
+        if (!isCreate)
+        {
+            fetch(`/api/jobsource/${jlsId}`)
+                .then(r => r.json())
+                .then(json =>
+                {
+                    const jobLogSource = json as IJobLogSource;
 
-                setState({
-                    ...state.value,
-                    jobLogSourceId: jobLogSource.id,
-                    jobLogSource
+                    setState({
+                        ...state.value,
+                        jobLogSourceId: jobLogSource.id,
+                        jobLogSource
+                    })
                 })
-            })
+        }
     });
 
     return {
         ...store,
-        save: () => {
-            fetch("/api/sources", {
+        save: () =>
+        {
+            fetch("/api/jobsource", {
                 method: "POST",
                 body: JSON.stringify(state.value.jobLogSource),
                 cache: "no-cache",
@@ -94,7 +113,8 @@ export const JobLogSourceStore = (options: IJobLogSourceStoreOptions) => {
                 }
             })
             .then(r => r.json())
-            .then(json => {
+            .then(json =>
+            {
                 const newLogSource = json as IJobLogSource;
 
                 setState({
@@ -103,6 +123,26 @@ export const JobLogSourceStore = (options: IJobLogSourceStoreOptions) => {
                     jobLogSource: newLogSource
                 })
             })
-        }
+        },
+        setName:reduceAction(state, (s, name: string) =>
+        {
+            return { ...s, jobLogSource: { ...s.jobLogSource, name }}
+        }),
+        setSourceFolder:reduceAction(state, (s, sourceFolder: string) =>
+        {
+            return { ...s, jobLogSource: { ...s.jobLogSource, sourceFolder }}
+        }),
+        setFileRegex:reduceAction(state, (s, fileRegex: string) =>
+        {
+            return { ...s, jobLogSource: { ...s.jobLogSource, fileRegex }}
+        }),
+        setSuccessRegex:reduceAction(state, (s, successRegex: string) =>
+        {
+            return { ...s, jobLogSource: { ...s.jobLogSource, successRegex }}
+        }),
+        setErrorRegex:reduceAction(state, (s, errorRegex: string) =>
+        {
+            return { ...s, jobLogSource: { ...s.jobLogSource, errorRegex }}
+        })
     }
 };

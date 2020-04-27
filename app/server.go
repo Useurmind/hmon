@@ -41,10 +41,20 @@ func (s *Server) Run() error {
 	}
 	spasHandler := handler.NewSPASHandler(&spasOptions)
 
-	mux := NewHTTPMux()
-	mux.PathHandlers["/api"] = apiHandler
-	mux.PathHandlers["/ui"] = spasHandler
-	mux.PathHandlers["/"] = http.RedirectHandler("/ui", 301)
+	mux := NewHTTPMux([]HTTPMuxHandler{
+		HTTPMuxHandler{ 
+			Path: "/api",
+			HTTPHandler: apiHandler,
+		},
+		HTTPMuxHandler{ 
+			Path: "/ui",
+			HTTPHandler: spasHandler,
+		},
+		HTTPMuxHandler{ 
+			Path: "/",
+			HTTPHandler: http.RedirectHandler("/ui", 301),
+		},
+	})
 
 	err = logConfigService.PingDB()
 	if err != nil {

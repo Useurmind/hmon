@@ -29,13 +29,20 @@ func NewAPIHandler(options *APIOptions) (http.Handler, error) {
 func (a API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("API Request %s: %s", r.Method, r.URL.String())
 
-	mux := NewHTTPMux()
-	mux.PathHandlers["/jobsource"] = jobSourceAPI{
-		LogConfigurationService: a.options.LogConfigurationService,
-	}
-	mux.PathHandlers["/sources"] = sourcesAPI{
-		LogConfigurationService: a.options.LogConfigurationService,
-	}
+	mux := NewHTTPMux([]HTTPMuxHandler {
+		HTTPMuxHandler{
+			Path: "/jobsource",
+			HTTPHandler: jobSourceAPI{
+				LogConfigurationService: a.options.LogConfigurationService,
+			},
+		},
+		HTTPMuxHandler{
+			Path: "/sources",
+			HTTPHandler: sourcesAPI{
+				LogConfigurationService: a.options.LogConfigurationService,
+			},
+		},
+	})
 
 	mux.ServeHTTP(w, r)
 }
