@@ -10,7 +10,7 @@ import (
 )
 
 type LogTypeService interface {
-	StoreLog(logSource *LogSource, path string)
+	StoreLog(logSource *LogSource, path string) error
 }
 
 type LogChecker struct {
@@ -109,7 +109,10 @@ func (lc *LogChecker) storeLogfile(logSource *LogSource, path string) error {
 		return fmt.Errorf("Could not find log service for log type %s in source %s, log file in question is %s", logSource.Type, logSource.Name, path)
 	}
 
-	logService.StoreLog(logSource, path)
+	err := logService.StoreLog(logSource, path)
+	if err != nil {
+		fmt.Printf("ERROR: Could not store log %s for source %s.", path, logSource.Name)
+	}
 
 	return nil
 }

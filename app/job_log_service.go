@@ -14,7 +14,11 @@ func (jl *JobLog) GetId() int {
 }
 
 type JobLogService struct {
-	DBService
+	*DBService
+}
+
+func (s *JobLogService) StoreLog(logSource *LogSource, path string) error {
+	return nil
 }
 
 func (s *JobLogService) StoreJobLog(jl *JobLog) (*JobLog, error) {

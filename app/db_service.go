@@ -1,20 +1,22 @@
 package main
 
 import (
-	"log"
-	"github.com/boltdb/bolt"
 	"encoding/json"
+	"log"
+	"os"
+
+	"github.com/boltdb/bolt"
 )
 
 type DBService struct {
 	dbFilePath string
-	db *bolt.DB
+	db         *bolt.DB
 }
 
 func NewDBService(dbFilePath string) *DBService {
 	return &DBService{
 		dbFilePath: dbFilePath,
-		db: nil,
+		db:         nil,
 	}
 }
 
@@ -57,6 +59,14 @@ func (s *DBService) Close() {
 	}
 }
 
+func (s *DBService) DeleteDB() error {
+	s.Close()
+	err := os.Remove(s.dbFilePath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
 
 type WithId interface {
 	GetId() int
@@ -71,6 +81,18 @@ func saveObject(b *bolt.Bucket, obj WithId) error {
 	err = b.Put(itob(obj.GetId()), json)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func readObject(b *bolt.Bucket, obj WithId) error {
+	val := b.Get(itob(obj.GetId()))
+	if val != nil {
+		err := json.Unmarshal(val, obj)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

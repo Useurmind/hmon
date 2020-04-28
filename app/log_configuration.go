@@ -154,13 +154,10 @@ func (s *LogConfigurationService) GetJobLogSource(id int) (*JobLogSource, error)
 			return nil
 		}
 
-		val := bJLS.Get(itob(id))
-		if val != nil {
-			jls = &JobLogSource{}
-			err = json.Unmarshal(val, jls)
-			if err != nil {
-				return err
-			}
+		jls = &JobLogSource{}
+		err := readObject(bJLS, jls)
+		if err != nil {
+			return err
 		}
 
 		return nil
