@@ -2,7 +2,6 @@ package main
 
 import (
 	"testing"
-	"os"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"path/filepath"
@@ -12,16 +11,15 @@ func TestNewFileIsRegistered(t *testing.T) {
 	filePath := filepath.FromSlash("testing/file1")
 
 	watcher := NewFileWatcher()
-	watcher.AddWatchedFolder("testing")
+	watcher.AddWatchedFolder("testing")	
 
-	err := os.Mkdir("testing", 0644)
-	assert.Nil(t, err)
-	err = ioutil.WriteFile(filePath, []byte("content 1"), 0644)
+	testFolder := ensureTestingFolder(t)
+
+	err := ioutil.WriteFile(filePath, []byte("content 1"), 0644)
 	assert.Nil(t, err)
 
 	defer func() {
-		os.Remove(filePath)	
-		os.Remove("testing")
+		testFolder.EnsureDeleted(t)
 	}()
 
 	done := false

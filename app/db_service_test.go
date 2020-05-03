@@ -1,26 +1,27 @@
 package main
 
 import (
-	"testing"
 	"os"
-	"github.com/stretchr/testify/assert"
 	"path/filepath"
+	"testing"
+
 	"github.com/boltdb/bolt"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDBServiceEnsureAndDeleteWorks(t *testing.T) {
 	dbFilePath := filepath.FromSlash("testing/dbservice.db")
 	dbService := NewDBService(dbFilePath)
 
-	err := os.Mkdir("testing", 0644)
-	assert.Nil(t, err)
+	testFolder := ensureTestingFolder(t)
 
 	defer func() {
-		os.Remove(dbFilePath)	
-		os.Remove("testing")
+		// service must close db before file can be deleted
+		dbService.Close()
+		testFolder.EnsureDeleted(t)
 	}()
 
-	err = dbService.ensureDB()
+	err := dbService.ensureDB()
 	assert.Nil(t, err)
 
 	_, err = os.Stat(dbFilePath)
@@ -34,7 +35,7 @@ func TestDBServiceEnsureAndDeleteWorks(t *testing.T) {
 }
 
 type TestObject struct {
-	Id int
+	Id   int
 	Name string
 }
 
@@ -46,23 +47,22 @@ func TestDBServiceWriteReadObjectWorks(t *testing.T) {
 	dbFilePath := filepath.FromSlash("testing/dbservice.db")
 	dbService := NewDBService(dbFilePath)
 
-	err := os.Mkdir("testing", 0644)
-	assert.Nil(t, err)
+	testFolder := ensureTestingFolder(t)
 
 	defer func() {
+		// service must close db before file can be deleted
 		dbService.Close()
-		os.Remove(dbFilePath)	
-		os.Remove("testing")
+		testFolder.EnsureDeleted(t)
 	}()
 
-	err = dbService.ensureDB()
+	err := dbService.ensureDB()
 	assert.Nil(t, err)
 
 	db, err := dbService.getDB()
 	assert.Nil(t, err)
 
 	toSave := TestObject{
-		Id: 1,
+		Id:   1,
 		Name: "test",
 	}
 
